@@ -45,43 +45,20 @@ fi
 #	$ inotifymake test -- ./program
 #
 
-while [ $# -gt 0 ] ; do
-	if [ "$1" == "--" ] ; then
-		shift
-		break
-	fi
-	TARGETS="$TARGETS $1"
-	shift
-done
-
-if [ $# -gt 0 ] ; then
-	PROGRAM="$@"
-else
-	PROGRAM=""
-fi
-
+# while [ $# -gt 0 ] ; do
+# 	TARGETS="$TARGETS $1"
+# 	shift
+# done
 
 #
 # Start by running a build.
 #
 
 while true ; do
-	clear
-	make $TARGETS
+	#clear
+	#make $TARGETS
+	"$@"
 
-#
-# Assuming the build succeeded, run the program in the background, then loop
-# back to inotify.
-#
-
-	if [ $? -eq 0 ] && [ "$PROGRAM" ] ; then
-		echo -e "EXEC\t$PROGRAM"
-		$PROGRAM &
-		PID="$!"
-		sleep 0.1
-	else
-		PID=""
-	fi
 
 #
 # Wait for a file to be "saved" In this directory. Arguments to inotify:
@@ -103,16 +80,8 @@ while true ; do
 #
 
 	inotifywait -q -q -r -e 'close_write' \
-		--exclude '^\..*\.sw[px]*$|4913|~$|.git/.*\.lock$|.*i\.log$' .
+		--exclude '.git/.*\.lock$|.*i\.log$' .
 
-#
-# ... so now a "save" has happened. If the program is running, kill it, then
-# loop back to run the build.
-#
-
-	if [ "$PID" ] ; then
-		kill $PID
-	fi
 
 done
 
